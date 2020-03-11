@@ -1,0 +1,218 @@
+Andrew-id: ruixinh Name: Ruixin Huang
+
+
+
+
+
+
+SQL> START C:\Users\Ray\Desktop\CMULectureSpring\database\HW\SQLHW3\HW3.TXT
+SQL> SET LINESIZE 230;
+SQL> SET PAGESIZE 200;
+SQL> 
+SQL> --Q1--
+SQL> 
+SQL> SELECT GENRE, SUM(BEFORE_2015) AS "Before 2015",
+  2  SUM(YEAR_2015) AS "2015",
+  3  SUM(YEAR_2016) AS "2016",
+  4  SUM(YEAR_2017) AS "2017",
+  5  SUM(TOTAL) AS "GENRE TOTAL"
+  6   FROM(
+  7  SELECT (CASE WHEN UPPER(GENRE) IS NULL THEN 'Year Total'
+  8  			      WHEN UPPER(GENRE) LIKE '%CLASSIC%' THEN 'Classic'
+  9  			      ELSE GENRE END) AS "GENRE",
+ 10  SUM( (CASE WHEN YEAR<2015 THEN 1 ELSE 0 END)  ) "BEFORE_2015",
+ 11  SUM( (CASE WHEN YEAR=2015 THEN 1 ELSE 0 END) ) "YEAR_2015",
+ 12  SUM( (CASE WHEN YEAR=2016 THEN 1 ELSE 0 END) ) "YEAR_2016",
+ 13  SUM( (CASE WHEN YEAR=2017 THEN 1 ELSE 0 END) ) "YEAR_2017",
+ 14  COUNT(CATALOG_NUM) AS "TOTAL"
+ 15  FROM (
+ 16  		     SELECT *
+ 17  		     FROM FILM
+ 18  		     WHERE CATALOG_NUM IN (
+ 19  							     SELECT DISTINCT CATALOG_NUM
+ 20  							     FROM INVENTORY)
+ 21  		     )
+ 22  GROUP BY GROUPING SETS (GENRE, ()) )
+ 23  GROUP BY GENRE
+ 24  ORDER BY GENRE;
+
+GENRE                     Before 2015       2015       2016       2017 GENRE TOTAL                                                                                                                                                    
+------------------------- ----------- ---------- ---------- ---------- -----------                                                                                                                                                    
+Action and Adventure                6          0          1          0           7                                                                                                                                                    
+Children and Family                 2          0          1          1           4                                                                                                                                                    
+Classic                             7          0          0          0           7                                                                                                                                                    
+Comedy                              2          0          0          0           2                                                                                                                                                    
+Documentary                         1          0          0          0           1                                                                                                                                                    
+Fantasy                             2          0          0          0           2                                                                                                                                                    
+Sci-Fi                              4          0          1          1           6                                                                                                                                                    
+TV Drama                            0          1          0          0           1                                                                                                                                                    
+TV Sci-Fi                           2          0          0          0           2                                                                                                                                                    
+Thriller                            1          0          0          0           1                                                                                                                                                    
+War                                 1          0          0          0           1                                                                                                                                                    
+Year Total                         28          1          3          2          34                                                                                                                                                    
+
+12 rows selected.
+
+
+
+
+
+SQL> 
+SQL> --Q2--
+SQL> SELECT CITY, RANK() OVER (ORDER BY TIMES DESC) RANK
+  2  FROM (
+  3  SELECT CITY, COUNT(RENTAL_NUM) AS "TIMES"
+  4  FROM MEMBER LEFT OUTER JOIN RENTAL USING (MEMBER_ID)
+  5  GROUP BY CITY);
+
+CITY                       RANK                                                                                                                                                                                                       
+-------------------- ----------                                                                                                                                                                                                       
+Pittsburgh                    1                                                                                                                                                                                                       
+Monroeville                   2                                                                                                                                                                                                       
+Aliquippa                     3                                                                                                                                                                                                       
+Washington                    4                                                                                                                                                                                                       
+Morgantown                    5                                                                                                                                                                                                       
+
+SQL> 
+SQL> --Q3--
+SQL> SELECT GENRE,TITLE AS "TOP TITLE",TIMES
+  2  FROM (
+  3  	     SELECT GENRE,TITLE,TIMES,RANK() OVER (PARTITION BY GENRE ORDER BY TIMES DESC) "RANK"
+  4  	     FROM (
+  5  		     SELECT GENRE,TITLE,COUNT(RENTAL_NUM) AS "TIMES"
+  6  		     FROM FILM LEFT OUTER JOIN INVENTORY USING (CATALOG_NUM)
+  7  				       LEFT OUTER JOIN RENTED_ITEM USING (FILM_ID)
+  8  		     GROUP BY GENRE,TITLE)
+  9  )
+ 10  WHERE RANK = 1;
+
+GENRE                     TOP TITLE                                          TIMES                                                                                                                                                    
+------------------------- --------------------------------------------- ----------                                                                                                                                                    
+Action and Adventure      Transformers: Age of Extinction                        6                                                                                                                                                    
+Children and Family       Zootopia                                               2                                                                                                                                                    
+Classic                   Roman Holiday                                          1                                                                                                                                                    
+Classic                   Sabrina                                                1                                                                                                                                                    
+Classic                   Breakfast at Tiffany                                   1                                                                                                                                                    
+Classic, Drama            The Heart is a Lonely Hunter                           0                                                                                                                                                    
+Classic, Romance          Gone with the Wind                                     0                                                                                                                                                    
+Classic, War              The Longest Day                                        1                                                                                                                                                    
+Comedy                    Horrible Bosses                                        2                                                                                                                                                    
+Documentary               Titanic: The Complete Story                            1                                                                                                                                                    
+Fantasy                   Harry Potter and the Deathly Hollows: Part II          4                                                                                                                                                    
+Sci-Fi                    Avatar                                                 3                                                                                                                                                    
+TV Drama                  Scorpion: Season 1                                     1                                                                                                                                                    
+TV Sci-Fi                 Alphas: Season 2                                       5                                                                                                                                                    
+Thriller                  A Good Day to Die Hard                                 1                                                                                                                                                    
+War                       Pearl Harbor                                           1                                                                                                                                                    
+
+16 rows selected.
+
+SQL> 
+
+
+
+SQL> --Q4--
+SQL> SELECT SALES_REP_INFO,NVL(TIMES,0) AS TIMES,RANK() OVER (ORDER BY NVL(TIMES,0) DESC) AS "RANK"
+  2  FROM (
+  3  		     SELECT EMP_ID||' '||FIRST_NAME||' '||LAST_NAME AS "SALES_REP_INFO",COUNT(RENTAL_NUM) AS 				"TIMES"
+  4  		     FROM EMPLOYEE JOIN SALES_REP USING (EMP_ID)
+  5  					       LEFT OUTER JOIN RENTAL USING (EMP_ID)
+  6  		     WHERE RENT_DATE>(SYSDATE-60)
+  7  		     GROUP BY EMP_ID,FIRST_NAME,LAST_NAME)
+  8  RIGHT OUTER JOIN (SELECT EMP_ID||' '||FIRST_NAME||' '||LAST_NAME AS "SALES_REP_INFO"
+  9  				      FROM EMPLOYEE JOIN SALES_REP USING (EMP_ID) ) USING (SALES_REP_INFO);
+
+SALES_REP_INFO                                       TIMES       RANK                                                                                                                                                                 
+----------------------------------------------- ---------- ----------                                                                                                                                                                 
+105 Gloria Tremblay                                      5          1                                                                                                                                                                 
+106 Emma Wesley                                          3          2                                                                                                                                                                 
+103 Lily Evans                                           3          2                                                                                                                                                                 
+104 Victoria Lee                                         2          4                                                                                                                                                                 
+101 Jim Smith                                            1          5                                                                                                                                                                 
+102 Steve Baker                                          1          5                                                                                                                                                                 
+107 Luis Suarez                                          0          7                                                                                                                                                                 
+
+7 rows selected.
+SQL> 
+SQL> --Q5--
+SQL> SELECT *
+  2  FROM(
+  3  	     SELECT STORE_INFO,SALES_REP_INFO,TIMES,RANK() OVER (PARTITION BY STORE_INFO ORDER BY TIMES DESC) AS 		"RANK"
+  4  	     FROM(
+  5  		     SELECT STORE_NUM||' '||STORE_NAME AS "STORE_INFO",
+  6  		     EMP_ID||' '||FIRST_NAME||' '||LAST_NAME AS "SALES_REP_INFO",
+  7  		     COUNT(RENTAL_NUM) AS "TIMES"
+  8  		     FROM STORE JOIN EMPLOYEE USING (STORE_NUM)
+  9  					JOIN SALES_REP USING (EMP_ID)
+ 10  		     LEFT OUTER JOIN RENTAL USING (EMP_ID)
+ 11  		     GROUP BY STORE_NUM,STORE_NAME,EMP_ID,FIRST_NAME,LAST_NAME ) )
+ 12  WHERE RANK = 1;
+
+STORE_INFO                           SALES_REP_INFO                                       TIMES       RANK                                                                                                                            
+------------------------------------ ----------------------------------------------- ---------- ----------                                                                                                                            
+10 Oakland's DVD                     101 Jim Smith                                            4          1                                                                                                                            
+20 SQ Hill's DVD                     105 Gloria Tremblay                                      5          1                                                                                                                            
+30 DVD Hub                           106 Emma Wesley                                          5          1                                                                                                                            
+
+SQL> 
+SQL> --Q6--
+SQL> SELECT STORE_NUM,RENTED,TOTAL,
+  2  ROUND(RENTED/TOTAL*100,2)||'%' AS "PERCENT",
+  3  RANK() OVER (ORDER BY ROUND(RENTED/TOTAL*100,2)||'%' ) AS "RANK"
+  4  FROM
+  5  (
+  6  SELECT STORE_NUM,COUNT(DISTINCT FILM_ID) AS "RENTED"
+  7  FROM STORE JOIN INVENTORY USING (STORE_NUM)
+  8  			JOIN RENTED_ITEM USING (FILM_ID)
+  9  			JOIN RENTAL USING (RENTAL_NUM)
+ 10  WHERE RENT_DATE>SYSDATE-60
+ 11  GROUP BY STORE_NUM)
+ 12  JOIN (
+ 13  SELECT STORE_NUM,COUNT(DISTINCT FILM_ID) AS "TOTAL"
+ 14  FROM INVENTORY
+ 15  GROUP BY STORE_NUM) USING (STORE_NUM);
+
+STORE     RENTED      TOTAL PERCENT                                         RANK                                                                                                                                                      
+----- ---------- ---------- ----------------------------------------- ----------                                                                                                                                                      
+10             9         43 20.93%                                             1                                                                                                                                                      
+30            10         24 41.67%                                             2                                                                                                                                                      
+20            16         35 45.71%                                             3                                                                                                                                                      
+
+
+
+
+
+
+
+
+SQL> 
+SQL> --BONUS--
+SQL> SELECT STORE_INFO,LOYAL,TOTAL,
+  2  ROUND(LOYAL/TOTAL*100,2)||'%' AS "LOYAL_PERCENTAGE"
+  3  FROM(
+  4  SELECT STORE.STORE_NUM||' '||STORE_NAME AS "STORE_INFO",
+  5  COUNT(DISTINCT RENTAL_NUM) AS "TOTAL"
+  6  FROM MEMBER JOIN RENTAL USING (MEMBER_ID)
+  7  			     JOIN RENTED_ITEM USING (RENTAL_NUM)
+  8  			 JOIN INVENTORY USING (FILM_ID)
+  9  			     JOIN STORE ON INVENTORY.STORE_NUM = STORE.STORE_NUM
+ 10  GROUP BY STORE.STORE_NUM,STORE_NAME)
+ 11  JOIN(
+ 12  SELECT STORE.STORE_NUM||' '||STORE_NAME AS "STORE_INFO",
+ 13  COUNT(DISTINCT RENTAL_NUM) AS "LOYAL"
+ 14  FROM MEMBER JOIN RENTAL USING (MEMBER_ID)
+ 15  			     JOIN RENTED_ITEM USING (RENTAL_NUM)
+ 16  			 JOIN INVENTORY USING (FILM_ID)
+ 17  			     JOIN STORE ON INVENTORY.STORE_NUM = STORE.STORE_NUM
+ 18  WHERE MEMBER.STORE_NUM = INVENTORY.STORE_NUM
+ 19  GROUP BY STORE.STORE_NUM,STORE_NAME) USING (STORE_INFO)
+ 20  ORDER BY 2 DESC;
+
+STORE_INFO                                LOYAL      TOTAL LOYAL_PERCENTAGE                                                                                                                                                           
+------------------------------------ ---------- ---------- -----------------------------------------                                                                                                                                  
+10 Oakland's DVD                              4          9 44.44%                                                                                                                                                                     
+20 SQ Hill's DVD                              3          8 37.5%                                                                                                                                                                      
+30 DVD Hub                                    2          6 33.33%                                                                                                                                                                     
+
+SQL> 
+SQL> SPOOL OUT

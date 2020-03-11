@@ -1,0 +1,64 @@
+DROP TABLE loan     PURGE;
+DROP TABLE computer PURGE;
+DROP TABLE student  PURGE;
+DROP TABLE program  PURGE;
+DROP TABLE location PURGE;
+DROP TABLE vendor   PURGE;
+DROP TABLE item     PURGE;
+
+CREATE TABLE program
+( Prog_ID  VARCHAR2(10) CONSTRAINT program_ProgID_PK PRIMARY KEY,
+  Name     VARCHAR2(40) );
+
+CREATE TABLE location 
+( Location_ID  VARCHAR2(10) CONSTRAINT location_LocationID_PK PRIMARY KEY,
+  Loc_Bldg     VARCHAR2(30),      
+  Loc_Room     VARCHAR2(30) ); 
+ 
+CREATE TABLE vendor 
+( Vendor_ID      VARCHAR2(10) CONSTRAINT vendor_VendorID_PK PRIMARY KEY, 
+  Name           VARCHAR2(30), 
+  Contact_FName  VARCHAR2(20), 
+  Contact_LName  VARCHAR2(20),
+  Phone          VARCHAR2(20), 
+  Email          VARCHAR2(40),
+  CONSTRAINT vendor_Phone_CK CHECK (REGEXP_LIKE(Phone, '[0-9]{10}')),
+  CONSTRAINT vendor_Email_CK CHECK (Email LIKE '%_@%_._%') ); 
+
+CREATE TABLE item 
+( Item_ID     VARCHAR2(10) CONSTRAINT item_ItemID_PK PRIMARY KEY,
+  Item_Manuf  VARCHAR2(20), 
+  Item_Model  VARCHAR2(20),
+  Comments    VARCHAR2(150) );
+
+CREATE TABLE student 
+( St_ID     VARCHAR2(10) CONSTRAINT student_StID_PK PRIMARY KEY, 
+  St_LName  VARCHAR2(20), 
+  St_FName  VARCHAR2(20), 
+  Email     VARCHAR2(40), 
+  Prog_ID   VARCHAR2(10) NOT NULL,
+  CONSTRAINT student_ProgID_FK FOREIGN KEY (Prog_ID) REFERENCES program (Prog_ID),
+  CONSTRAINT student_Email_CK CHECK (Email LIKE '%_@andrew.cmu.edu') ); 
+ 
+CREATE TABLE computer 
+( Comp_ID      VARCHAR2(10) CONSTRAINT computer_CompID_PK PRIMARY KEY,
+  Comp_Name    VARCHAR2(40),
+  Year         DATE,
+  Cost         NUMBER(10),     
+  Location_ID  VARCHAR2(10) NOT NULL,     
+  Item_ID      VARCHAR2(10) NOT NULL,     
+  Vendor_ID    VARCHAR2(10) NOT NULL,
+  CONSTRAINT computer_LocationID_FK FOREIGN KEY (Location_ID) REFERENCES location (Location_ID), 
+  CONSTRAINT computer_VendorID_FK FOREIGN KEY (Vendor_ID) REFERENCES vendor (Vendor_ID),
+  CONSTRAINT computer_ItemID_FK FOREIGN KEY (Item_ID) REFERENCES item (Item_ID),
+  CONSTRAINT computer_Cost_CK CHECK (Cost > 0) );
+ 
+CREATE TABLE loan 
+( Loan_ID       VARCHAR2(10) CONSTRAINT loan_LoanID_PK  PRIMARY KEY, 
+  St_ID         VARCHAR2(10) NOT NULL,     
+  Comp_ID       VARCHAR2(10) NOT NULL,      
+  Start_Date    DATE DEFAULT SYSDATE,
+  Date_Returned DATE,
+  CONSTRAINT loan_StID_FK FOREIGN KEY (St_ID) REFERENCES student(St_ID),
+  CONSTRAINT loan_CompID_FK FOREIGN KEY (Comp_ID) REFERENCES computer(Comp_ID),
+  CONSTRAINT loan_DateReturned_CK CHECK (Date_Returned > Start_DATE) );

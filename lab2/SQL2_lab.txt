@@ -1,0 +1,72 @@
+--Q1
+
+--A1
+SELECT DISTINCT shipperid || ':' || companyname AS "Shipper Information"
+FROM shippers join orders on shippers.shipperid = orders.shipvia
+WHERE lower(shipcity) = 'london' 
+AND extract( year from orderdate ) = 2011
+AND extract( month from orderdate ) = 3;
+
+--A2
+SELECT DISTINCT shipperid || ':' || companyname AS "Shipper Information"
+FROM shippers join orders on shippers.shipperid = orders.shipvia
+WHERE upper(shipcity) = 'LONDON' 
+AND TO_CHAR(orderdate, 'mm-yyyy')='03-2011';
+
+--Q2
+
+--A1
+SELECT categoryID|| ':' || categoryname AS "Category Information", COUNT(DISTINCT productID) AS "Product #"
+FROM categories join products using (categoryID)
+GROUP BY categoryID, categoryname
+UNION ALL
+SELECT 'Total', count(DISTINCT productid)
+FROM products;
+
+--A2
+SELECT NVL(categoryID || ':' || categoryname, 'Total') AS "Category Information", COUNT(DISTINCT productID) AS "Product #"
+FROM categories join products using (categoryID)
+GROUP BY GROUPING SETS(categoryID || ':' || categoryname, ());
+
+--A3
+SELECT NVL(categoryID || ':' || categoryname, 'Total') AS "Category Information", COUNT(DISTINCT productID) AS "Product #"
+FROM categories join products using (categoryID)
+GROUP BY ROLLUP(categoryID || ':' || categoryname);
+
+--Q3
+SELECT shipperid || ':' || shippers.companyname AS "Shipper Information",
+    COUNT(DISTINCT customerid) AS "Customer #",
+    COUNT(DISTINCT orderid) AS "Order #",
+    SUM(quantity) AS "Product Quantity"
+FROM shippers LEFT OUTER JOIN orders ON (shippers.ShipperID = orders.shipvia)
+    LEFT OUTER JOIN customers USING (customerid)
+    LEFT OUTER JOIN orderdetails USING (orderid)
+WHERE LOWER(country) = 'uk'
+GROUP BY shipperid, shippers.companyname;
+
+--Q4
+SELECT categoryname, supplierid, count(*) AS "Product #"
+FROM suppliers JOIN products USING (supplierid)
+    JOIN categories USING (categoryId)
+WHERE supplierid < 11
+GROUP BY supplierid, categoryname
+ORDER BY categoryname;
+
+--Q5
+SELECT orderid, TO_CHAR( SUM(quantity * unitprice * (1 - discount)), '$999,999.9') AS "Total Price"
+FROM orderdetails
+GROUP BY orderid
+HAVING sum(quantity * unitprice * (1 - discount)) > 10000;
+
+--Q6
+SELECT c.customerid || ':' || c.companyName AS "Customer Information"
+FROM orders o JOIN customers c ON (o.customerid = c.customerid)
+    JOIN shippers s on (s.shipperid = o.shipvia)
+WHERE to_char(shippeddate, 'mm-yyyy') = '01-2012'
+    AND lower(s.companyname) = 'federal shipping'
+MINUS
+SELECT c.customerid || ':' || c.companyName AS "Customer Information"
+FROM orders o JOIN customers c ON o.customerid = c.customerid
+    JOIN shippers s on s.shipperid = o.shipvia
+WHERE to_char(shippeddate, 'mm-yyyy') = '01-2012'
+    AND lower(s.companyname) = 'united package';

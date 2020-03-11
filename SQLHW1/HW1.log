@@ -1,0 +1,355 @@
+Andrew ID: ruixinh    Name: Ruixin Huang
+
+Part I  Database Maintenance
+
+SQL> START C:\Users\Ray\Desktop\database\HW\SQLHW1\HW1.TXT
+SQL> CONNECT RAY/123456;
+Connected.
+SQL> 
+SQL> SET LINESIZE 180;
+SQL> SET PAGESIZE 200;
+SQL> 
+SQL> 
+
+Question #1
+
+SQL> ALTER TABLE RENTAL
+  2  ADD
+  3  CONSTRAINT RENTAL_CC_TYPE_VALID
+  4  CHECK(CC_TYPE IN('CREDIT','DEBIT'))
+  5  ENABLE NOVALIDATE;
+
+Table altered.
+
+Question #2
+
+SQL> 
+SQL> ALTER TABLE FILM
+  2  MODIFY GENRE VARCHAR2(30);
+
+Table altered.
+
+SQL> 
+SQL> UPDATE FILM
+  2  SET GENRE = CONCAT('Classic ',GENRE)
+  3  WHERE (GENRE != 'Classic' OR GENRE IS NULL) AND YEAR < 1970;
+
+4 rows updated.
+
+SQL> 
+SQL> SELECT CATALOG_NUM||' '||TITLE AS "FILM"
+  2  FROM FILM
+  3  WHERE GENRE LIKE 'Classic%';
+
+FILM                                                                                                                                                                                
+---------------------------------------------------                                                                                                                                 
+11W Gone with the Wind                                                                                                                                                              
+12F The Longest Day                                                                                                                                                                 
+13F Roman Holiday                                                                                                                                                                   
+14F Sabrina                                                                                                                                                                         
+15W Breakfast at Tiffany                                                                                                                                                            
+16W My Fair Lady                                                                                                                                                                    
+17F The Heart is a Lonely Hunter                                                                                                                                                    
+
+7 rows selected.
+
+Question #3
+
+SQL> 
+SQL> UPDATE FILM
+  2  SET RATING = 'NR'
+  3  WHERE RATING IS NULL;
+
+3 rows updated.
+
+Question #4
+
+SQL> 
+SQL> INSERT INTO film VALUES ('85M','DVD', 'Jack Irish TV Series',2016,2,'PG-13',342,'TV Bibliographic');
+
+1 row created.
+
+SQL> INSERT INTO film VALUES ('86M','Blu-ray', 'Batman: The Complete Television Series',2018,3,'PG-13',19,'TV Carton');
+
+1 row created.
+
+SQL> INSERT INTO film VALUES ('87M','Blu-ray', 'Stellvia Complete TV Series',2018,1,'R',294,'TV Carton');
+
+1 row created.
+
+SQL> INSERT INTO film VALUES ('88M','DVD', 'Mad About You - The Complete Series',2018,14,'R',294,'TV DRAMA');
+
+1 row created.
+
+Part II Queries
+
+Question #1
+
+SQL> 
+SQL> SELECT INVENTORY.FILM_ID||'-'||TITLE AS "FILM",
+  2  STORE.STORE_NUM||'-'||STORE_NAME AS "STORE",DATE_IN
+  3  FROM INVENTORY,FILM,STORE
+  4  WHERE INVENTORY.CATALOG_NUM = FILM.CATALOG_NUM
+  5  AND INVENTORY.STORE_NUM = STORE.STORE_NUM
+  6  AND YEAR>=2015
+  7  AND GENRE = 'Sci-Fi'
+  8  ORDER BY STORE,DATE_IN,INVENTORY.FILM_ID;
+
+FILM                                                STORE                                DATE_IN                                                                                    
+--------------------------------------------------- ------------------------------------ ---------                                                                                  
+9925-Star Wars: The Force Awakens                   10-Oakland's DVD                     19-FEB-19                                                                                  
+9926-Rogue One: A Star Wars Story                   20-SQ Hill's DVD                     19-FEB-19                                                                                  
+
+Question #2
+
+SQL> 
+SQL> 
+SQL> COLUMN FILM FORMAT A28;
+SQL> COLUMN STORE FORMAT A20;
+SQL> COLUMN LOCATION FORMAT A35;
+SQL> SELECT CATALOG_NUM||'-'||TITLE AS "FILM",
+  2  FILM_ID,RATING,DATE_IN,
+  3  STORE_NUM||'-'||STORE_NAME AS STORE,
+  4  STREET ||' '|| CITY || ',' || STATE AS "LOCATION"
+  5  FROM STORE JOIN INVENTORY USING (STORE_NUM)
+  6  			JOIN FILM USING (CATALOG_NUM)
+  7  WHERE DATE_IN >= (SYSDATE-40) AND DATE_IN <= SYSDATE
+  8  ORDER BY STORE,FILM;
+
+FILM                         FILM_ RATING  DATE_IN   STORE                LOCATION                                                                                                  
+---------------------------- ----- ------- --------- -------------------- -----------------------------------                                                                       
+13F-Roman Holiday            9920  NR      19-FEB-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+14F-Sabrina                  9921  NR      19-FEB-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+15W-Breakfast at Tiffany     9922  NR      19-FEB-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+16W-My Fair Lady             9923  G       19-FEB-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+17F-The Heart is a Lonely Hu 9924  NR      19-FEB-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+nter                                                                                                                                                                                
+                                                                                                                                                                                    
+38W-Star Wars: The Force Awa 9925  PG-13   19-FEB-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+kens                                                                                                                                                                                
+                                                                                                                                                                                    
+50W-Star Trek                9932  PG-13   19-FEB-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+50W-Star Trek                9931  PG-13   19-FEB-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+50W-Star Trek                9930  PG-13   19-FEB-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+60W-Harry Potter and the Dea 9942  PG-13   06-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+thly Hollows: Part II                                                                                                                                                               
+                                                                                                                                                                                    
+60W-Harry Potter and the Dea 9941  PG-13   06-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+thly Hollows: Part II                                                                                                                                                               
+                                                                                                                                                                                    
+62W-Alphas: Season 1         9954  NR      06-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+62W-Alphas: Season 1         9953  NR      06-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+62W-Alphas: Season 1         9952  NR      06-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+62W-Alphas: Season 1         9951  NR      06-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+63W-The Dark Knight Rises    9958  PG-13   06-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+63W-The Dark Knight Rises    9957  PG-13   06-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+63W-The Dark Knight Rises    9956  PG-13   06-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+63W-The Dark Knight Rises    9955  PG-13   06-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+64W-The Avengers             9962  PG-13   06-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+64W-The Avengers             9961  PG-13   06-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+64W-The Avengers             9960  PG-13   06-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+64W-The Avengers             9959  PG-13   06-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+65W-Wrath of the Titans      9966  PG-13   13-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+65W-Wrath of the Titans      9963  PG-13   13-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+65W-Wrath of the Titans      9964  PG-13   13-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+65W-Wrath of the Titans      9965  PG-13   13-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+68W-Alphas: Season 2         9978  NR      15-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+68W-Alphas: Season 2         9979  NR      15-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+68W-Alphas: Season 2         9977  NR      15-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+71W-The Croods               9986  PG      15-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+71W-The Croods               9988  PG      15-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+71W-The Croods               9987  PG      15-MAR-19 10-Oakland's DVD     101 Kelly Str. Pittsburgh,PA                                                                              
+43W-Rogue One: A Star Wars S 9926  PG-13   19-FEB-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+tory                                                                                                                                                                                
+                                                                                                                                                                                    
+45W-Clash of the Titans      9927  PG-13   19-FEB-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+48W-Brave                    9928  PG      19-FEB-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+49W-Zootopia                 9929  PG      19-FEB-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+50W-Star Trek                9933  PG-13   19-FEB-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+50W-Star Trek                9935  PG-13   19-FEB-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+50W-Star Trek                9934  PG-13   19-FEB-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+60W-Harry Potter and the Dea 9943  PG-13   06-MAR-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+thly Hollows: Part II                                                                                                                                                               
+                                                                                                                                                                                    
+60W-Harry Potter and the Dea 9944  PG-13   06-MAR-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+thly Hollows: Part II                                                                                                                                                               
+                                                                                                                                                                                    
+60W-Harry Potter and the Dea 9945  PG-13   06-MAR-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+thly Hollows: Part II                                                                                                                                                               
+                                                                                                                                                                                    
+61W-Guardians of the Galaxy  9947  PG-13   06-MAR-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+61W-Guardians of the Galaxy  9948  PG-13   06-MAR-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+61W-Guardians of the Galaxy  9949  PG-13   06-MAR-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+61W-Guardians of the Galaxy  9950  PG-13   06-MAR-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+61W-Guardians of the Galaxy  9946  PG-13   06-MAR-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+67W-Spectre                  9971  PG-13   15-MAR-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+67W-Spectre                  9972  PG-13   15-MAR-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+67W-Spectre                  9973  PG-13   15-MAR-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+68W-Alphas: Season 2         9980  NR      15-MAR-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+68W-Alphas: Season 2         9981  NR      15-MAR-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+68W-Alphas: Season 2         9982  NR      15-MAR-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+72W-Moana                    9989  PG      15-MAR-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+72W-Moana                    9990  PG      15-MAR-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+72W-Moana                    9991  PG      15-MAR-19 20-SQ Hill's DVD     250 Hill Ave. Pittsburgh,PA                                                                               
+50W-Star Trek                9937  PG-13   19-FEB-19 30-DVD Hub           284 Westwood Str. Pittsburgh,PA                                                                           
+50W-Star Trek                9938  PG-13   19-FEB-19 30-DVD Hub           284 Westwood Str. Pittsburgh,PA                                                                           
+50W-Star Trek                9936  PG-13   19-FEB-19 30-DVD Hub           284 Westwood Str. Pittsburgh,PA                                                                           
+66W-Scorpion: Season 1       9968  NR      13-MAR-19 30-DVD Hub           284 Westwood Str. Pittsburgh,PA                                                                           
+66W-Scorpion: Season 1       9969  NR      13-MAR-19 30-DVD Hub           284 Westwood Str. Pittsburgh,PA                                                                           
+66W-Scorpion: Season 1       9970  NR      13-MAR-19 30-DVD Hub           284 Westwood Str. Pittsburgh,PA                                                                           
+66W-Scorpion: Season 1       9967  NR      13-MAR-19 30-DVD Hub           284 Westwood Str. Pittsburgh,PA                                                                           
+67W-Spectre                  9976  PG-13   15-MAR-19 30-DVD Hub           284 Westwood Str. Pittsburgh,PA                                                                           
+67W-Spectre                  9975  PG-13   15-MAR-19 30-DVD Hub           284 Westwood Str. Pittsburgh,PA                                                                           
+67W-Spectre                  9974  PG-13   15-MAR-19 30-DVD Hub           284 Westwood Str. Pittsburgh,PA                                                                           
+68W-Alphas: Season 2         9983  NR      15-MAR-19 30-DVD Hub           284 Westwood Str. Pittsburgh,PA                                                                           
+68W-Alphas: Season 2         9985  NR      15-MAR-19 30-DVD Hub           284 Westwood Str. Pittsburgh,PA                                                                           
+68W-Alphas: Season 2         9984  NR      15-MAR-19 30-DVD Hub           284 Westwood Str. Pittsburgh,PA                                                                           
+73W-A Good Day to Die Hard   9993  R       18-MAR-19 30-DVD Hub           284 Westwood Str. Pittsburgh,PA                                                                           
+73W-A Good Day to Die Hard   9992  R       18-MAR-19 30-DVD Hub           284 Westwood Str. Pittsburgh,PA                                                                           
+74W-Star Trek: Into Darkness 9995  PG-13   18-MAR-19 30-DVD Hub           284 Westwood Str. Pittsburgh,PA                                                                           
+74W-Star Trek: Into Darkness 9994  PG-13   18-MAR-19 30-DVD Hub           284 Westwood Str. Pittsburgh,PA                                                                           
+
+74 rows selected.
+
+Question #3
+
+SQL> 
+SQL> SELECT DISTINCT MEMBER.MEMBER_ID||' '|| FIRST_NAME || ' ' || LAST_NAME AS "MEMBER"
+  2  FROM FILM,INVENTORY,RENTED_ITEM,RENTAL,MEMBER
+  3  WHERE FILM.CATALOG_NUM = INVENTORY.CATALOG_NUM
+  4  AND INVENTORY.FILM_ID = RENTED_ITEM.FILM_ID
+  5  AND RENTED_ITEM.RENTAL_NUM = RENTAL.RENTAL_NUM
+  6  AND RENTAL.MEMBER_ID = MEMBER.MEMBER_ID
+  7  MINUS
+  8  SELECT DISTINCT MEMBER.MEMBER_ID||' '|| FIRST_NAME || ' ' || LAST_NAME AS "MEMBER"
+  9  FROM FILM,INVENTORY,RENTED_ITEM,RENTAL,MEMBER
+ 10  WHERE FILM.CATALOG_NUM = INVENTORY.CATALOG_NUM
+ 11  AND INVENTORY.FILM_ID = RENTED_ITEM.FILM_ID
+ 12  AND RENTED_ITEM.RENTAL_NUM = RENTAL.RENTAL_NUM
+ 13  AND RENTAL.MEMBER_ID = MEMBER.MEMBER_ID
+ 14  AND GENRE NOT IN ('Sci-Fi','TV Sci-Fi');
+
+MEMBER                                                                                                                                                                              
+-----------------------------------------------                                                                                                                                     
+010 Serena Sharma                                                                                                                                                                   
+
+Question #4
+
+SQL> 
+SQL> 
+SQL> COLUMN EMPLOYEE_INFO FORMAT A25;
+SQL> COLUMN WEEK FORMAT A5;
+SQL> COLUMN MEMBER_INFO FORMAT A25;
+SQL> COLUMN STORE_INFO FORMAT A25;
+SQL> COLUMN HOME_LOCATION FORMAT A15;
+SQL> 
+SQL> SELECT EMPLOYEE.EMP_ID||' '||EMPLOYEE.FIRST_NAME||' '||EMPLOYEE.LAST_NAME AS "EMPLOYEE_INFO",
+  2  RENT_DATE,TO_CHAR(RENT_DATE,'W') AS "WEEK",
+  3  MEMBER.MEMBER_ID||' '||MEMBER.FIRST_NAME || ' ' || MEMBER.LAST_NAME AS "MEMBER_INFO",
+  4  STORE.STORE_NUM||''||STORE_NAME AS "STORE_INFO",
+  5  MEMBER.CITY||','||MEMBER.STATE AS "HOME_LOCATION"
+  6  FROM EMPLOYEE,STORE,MEMBER,RENTAL,SALES_REP
+  7  WHERE EMPLOYEE.EMP_ID = SALES_REP.EMP_ID
+  8  AND SALES_REP.EMP_ID = RENTAL.EMP_ID
+  9  AND STORE.STORE_NUM = MEMBER.STORE_NUM
+ 10  AND MEMBER.MEMBER_ID = RENTAL.MEMBER_ID
+ 11  AND TO_CHAR(RENT_DATE,'W')<=2
+ 12  AND RENT_DATE LIKE '%MAR%'
+ 13  AND MEMBER.CITY = 'Pittsburgh'
+ 14  AND MEMBER.STATE = 'PA'
+ 15  ORDER BY SALES_REP.EMP_ID,MEMBER.MEMBER_ID;
+
+EMPLOYEE_INFO             RENT_DATE WEEK  MEMBER_INFO               STORE_INFO                HOME_LOCATION                                                                         
+------------------------- --------- ----- ------------------------- ------------------------- ---------------                                                                       
+101 Jim Smith             07-MAR-19 1     007 Gladys Wang           20SQ Hill's DVD           Pittsburgh,PA                                                                         
+103 Lily Evans            09-MAR-19 2     008 Tiffany Foster        20SQ Hill's DVD           Pittsburgh,PA                                                                         
+103 Lily Evans            07-MAR-19 1     008 Tiffany Foster        20SQ Hill's DVD           Pittsburgh,PA                                                                         
+104 Victoria Lee          11-MAR-19 2     006 Alan Gopal            10Oakland's DVD           Pittsburgh,PA                                                                         
+105 Gloria Tremblay       08-MAR-19 2     007 Gladys Wang           20SQ Hill's DVD           Pittsburgh,PA                                                                         
+
+Question #5
+
+SQL> 
+SQL> SELECT EMPLOYEE.EMP_ID||' '||EMPLOYEE.FIRST_NAME||' '||EMPLOYEE.LAST_NAME AS "EMPLOYEE_INFO",
+  2  RENT_DATE,TO_CHAR(RENT_DATE,'W') AS "WEEK",
+  3  MEMBER.MEMBER_ID||' '||MEMBER.FIRST_NAME || ' ' || MEMBER.LAST_NAME AS "MEMBER_INFO",
+  4  STORE.STORE_NUM||''||STORE_NAME AS "STORE_INFO",
+  5  MEMBER.CITY||','||MEMBER.STATE AS "HOME_LOCATION"
+  6  FROM EMPLOYEE,STORE,MEMBER,RENTAL,SALES_REP
+  7  WHERE EMPLOYEE.EMP_ID = SALES_REP.EMP_ID
+  8  AND SALES_REP.EMP_ID = RENTAL.EMP_ID
+  9  AND STORE.STORE_NUM = MEMBER.STORE_NUM
+ 10  AND MEMBER.MEMBER_ID = RENTAL.MEMBER_ID
+ 11  AND TO_CHAR(RENT_DATE,'W')<=2
+ 12  AND RENT_DATE LIKE '%MAR%'
+ 13  INTERSECT
+ 14  SELECT EMPLOYEE.EMP_ID||' '||EMPLOYEE.FIRST_NAME||' '||EMPLOYEE.LAST_NAME AS "EMPLOYEE_INFO",
+ 15  RENT_DATE,TO_CHAR(RENT_DATE,'W') AS "WEEK",
+ 16  MEMBER.MEMBER_ID||' '||MEMBER.FIRST_NAME || ' ' || MEMBER.LAST_NAME AS "MEMBER_INFO",
+ 17  STORE.STORE_NUM||''||STORE_NAME AS "STORE_INFO",
+ 18  MEMBER.CITY||','||MEMBER.STATE AS "HOME_LOCATION"
+ 19  FROM EMPLOYEE,STORE,MEMBER,RENTAL,SALES_REP
+ 20  WHERE EMPLOYEE.EMP_ID = SALES_REP.EMP_ID
+ 21  AND SALES_REP.EMP_ID = RENTAL.EMP_ID
+ 22  AND STORE.STORE_NUM = MEMBER.STORE_NUM
+ 23  AND MEMBER.MEMBER_ID = RENTAL.MEMBER_ID
+ 24  AND MEMBER.CITY = 'Pittsburgh'
+ 25  AND MEMBER.STATE = 'PA'
+ 26  ORDER BY EMPLOYEE_INFO,MEMBER_INFO;
+
+EMPLOYEE_INFO             RENT_DATE WEEK  MEMBER_INFO               STORE_INFO                HOME_LOCATION                                                                         
+------------------------- --------- ----- ------------------------- ------------------------- ---------------                                                                       
+101 Jim Smith             07-MAR-19 1     007 Gladys Wang           20SQ Hill's DVD           Pittsburgh,PA                                                                         
+103 Lily Evans            07-MAR-19 1     008 Tiffany Foster        20SQ Hill's DVD           Pittsburgh,PA                                                                         
+103 Lily Evans            09-MAR-19 2     008 Tiffany Foster        20SQ Hill's DVD           Pittsburgh,PA                                                                         
+104 Victoria Lee          11-MAR-19 2     006 Alan Gopal            10Oakland's DVD           Pittsburgh,PA                                                                         
+105 Gloria Tremblay       08-MAR-19 2     007 Gladys Wang           20SQ Hill's DVD           Pittsburgh,PA                                                                         
+
+Question #6
+
+SQL> 
+SQL> COLUMN RETURN_DATE FORMAT A12;
+SQL> 
+SQL> SELECT MEMBER.MEMBER_ID||' '||MEMBER.FIRST_NAME || ' ' || MEMBER.LAST_NAME AS "MEMBER_INFO",
+  2  MEMBER.CITY||','||MEMBER.STATE AS "HOME_LOCATION",
+  3  TITLE,RENT_DATE,RETURN_DATE
+  4  FROM FILM,INVENTORY,RENTED_ITEM,RENTAL,MEMBER
+  5  WHERE FILM.CATALOG_NUM = INVENTORY.CATALOG_NUM
+  6  AND INVENTORY.FILM_ID = RENTED_ITEM.FILM_ID
+  7  AND RENTED_ITEM.RENTAL_NUM = RENTAL.RENTAL_NUM
+  8  AND RENTAL.MEMBER_ID = MEMBER.MEMBER_ID
+  9  AND (
+ 10  (MEMBER.CITY = 'Pittsburgh' AND MEMBER.STATE != 'PA')
+ 11  OR (MEMBER.CITY != 'Pittsburgh' AND MEMBER.STATE = 'PA')
+ 12  )
+ 13  ORDER BY MEMBER.LAST_NAME;
+
+MEMBER_INFO               HOME_LOCATION   TITLE                                         RENT_DATE RETURN_DATE                                                                       
+------------------------- --------------- --------------------------------------------- --------- ------------                                                                      
+004 Muriel Green          Washington,PA   Wrath of the Titans                           13-MAR-19 21-MAR-19                                                                         
+004 Muriel Green          Washington,PA   Horrible Bosses                               05-FEB-19 05-FEB-19                                                                         
+004 Muriel Green          Washington,PA   The Avengers                                  13-MAR-19 20-MAR-19                                                                         
+001 David Lee             Monroeville,PA  Transformers: Age of Extinction               04-FEB-19 06-FEB-19                                                                         
+001 David Lee             Monroeville,PA  The Croods                                    15-MAR-19 20-MAR-19                                                                         
+001 David Lee             Monroeville,PA  Avatar                                        04-FEB-19 06-FEB-19                                                                         
+001 David Lee             Monroeville,PA  Harry Potter and the Deathly Hollows: Part I  04-FEB-19 06-FEB-19                                                                         
+001 David Lee             Monroeville,PA  Alphas: Season 2                              15-MAR-19 21-MAR-19                                                                         
+002 Jose Sanchez          Aliquippa,PA    Clash of the Titans                           12-MAR-19 20-MAR-19                                                                         
+002 Jose Sanchez          Aliquippa,PA    Alphas: Season 2                              20-MAR-19                                                                                   
+002 Jose Sanchez          Aliquippa,PA    Harry Potter and the Deathly Hollows: Part II 12-MAR-19 22-MAR-19                                                                         
+002 Jose Sanchez          Aliquippa,PA    Transformers: Age of Extinction               05-FEB-19 06-FEB-19                                                                         
+002 Jose Sanchez          Aliquippa,PA    Spectre                                       20-MAR-19                                                                                   
+002 Jose Sanchez          Aliquippa,PA    Transformers: Age of Extinction               12-MAR-19                                                                                   
+009 Robin Singh           Monroeville,PA  Spectre                                       20-MAR-19                                                                                   
+009 Robin Singh           Monroeville,PA  Spectre                                       15-MAR-19 18-MAR-19                                                                         
+009 Robin Singh           Monroeville,PA  Transformers: Age of Extinction               15-MAR-19 19-MAR-19                                                                         
+009 Robin Singh           Monroeville,PA  Guardians of the Galaxy                       20-MAR-19                                                                                   
+009 Robin Singh           Monroeville,PA  Zootopia                                      20-MAR-19                                                                                   
+009 Robin Singh           Monroeville,PA  Skyfall                                       15-MAR-19 18-MAR-19                                                                         
+009 Robin Singh           Monroeville,PA  Scorpion: Season 1                            15-MAR-19 19-MAR-19                                                                         
+
+21 rows selected.
+
+SQL> 
+SQL> 
+SQL> SPOOL OUT
